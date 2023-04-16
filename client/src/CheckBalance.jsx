@@ -1,6 +1,7 @@
 import server from "./server";
 
-function Wallet({ address, setAddress, balance, setBalance }) {
+function CheckBalance({ address, setAddress, balance, setBalance }) {
+
   async function onChange(evt) {
     const address = evt.target.value;
     setAddress(address);
@@ -16,7 +17,7 @@ function Wallet({ address, setAddress, balance, setBalance }) {
 
   return (
     <div className="container wallet">
-      <h1>Your Wallet</h1>
+      <h1>Check Balance</h1>
 
       <label>
         Wallet Address
@@ -28,4 +29,4 @@ function Wallet({ address, setAddress, balance, setBalance }) {
   );
 }
 
-export default Wallet;
+export default CheckBalance;

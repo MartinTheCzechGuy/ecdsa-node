@@ -1,7 +1,8 @@
 import { useState } from "react";
 import server from "./server";
+import crypto from "./crypto.js";
 
-function Transfer({ address, setBalance }) {
+function Transfer({ wallet, setWalletBalance, checkedBalanceAddress, checkedBalance, setCheckedBalance }) {
   const [sendAmount, setSendAmount] = useState("");
   const [recipient, setRecipient] = useState("");
 
@@ -10,28 +11,43 @@ function Transfer({ address, setBalance }) {
   async function transfer(evt) {
     evt.preventDefault();
 
+    if (!recipient) {
+      alert("recipient has to be set")
+      return
+    }
+
+    if (sendAmount == "") {
+      alert("amount has to be set")
+      return
+    }
+
+    const message = { amount: parseInt(sendAmount), recipient};
+
+    const signature = await crypto.sign(wallet, message);
+
     try {
       const {
         data: { balance },
-      } = await server.post(`send`, {
-        sender: address,
-        amount: parseInt(sendAmount),
-        recipient,
-      });
-      setBalance(balance);
+      } = await server.post(`send`, { message, signature });
+      setWalletBalance(balance);
     } catch (ex) {
       alert(ex.response.data.message);
+      return
     }
+
+    if (recipient == checkedBalanceAddress) {
+      setCheckedBalance(checkedBalance + parseInt(sendAmount));
+    } 
   }
 
   return (
-    <form className="container transfer" onSubmit={transfer}>
-      <h1>Send Transaction</h1>
+    <form className="transfer" onSubmit={transfer}>
+      <h2>Send Transaction</h2>
 
       <label>
         Send Amount
         <input
-          placeholder="1, 2, 3..."
+          placeholder="Amount to transfer"
           value={sendAmount}
           onChange={setValue(setSendAmount)}
         ></input>
@@ -40,7 +56,7 @@ function Transfer({ address, setBalance }) {
       <label>
         Recipient
         <input
-          placeholder="Type an address, for example: 0x2"
+          placeholder="Type an address"
           value={recipient}
           onChange={setValue(setRecipient)}
         ></input>
