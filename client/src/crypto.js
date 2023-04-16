@@ -1,6 +1,6 @@
 import * as secp from "ethereum-cryptography/secp256k1";
 import { keccak256 } from "ethereum-cryptography/keccak";
-import { hexToBytes, toHex } from "ethereum-cryptography/utils";
+import { hexToBytes, toHex, utf8ToBytes } from "ethereum-cryptography/utils";
 
 const wallets = new Map(
     [
@@ -14,22 +14,22 @@ const wallets = new Map(
     ]
 );   
 
-const hashMessage = (message) => keccak256(Uint8Array.from(message));
+const hashMessage = (message) => keccak256(utf8ToBytes(message.toString()));
 
 const getPublicKey = (user) => {
-  if (!user) return null;
+  if (!user || !wallets.has(user)) return null;
   return hexToBytes(wallets.get(user).publicKey);
 };
 
 const getPrivateKey = (user) => {
-  if (!user) return null;
+  if (!user || !wallets.has(user)) return null;
   return hexToBytes(wallets.get(user).privateKey);
 };
 
 const getAddress = (user) => {
   if (!user) return null; 
-  const pubKey = getPublicKey(user);
-  const hash = keccak256(pubKey.slice(1));
+  const publicKey = getPublicKey(user);
+  const hash = keccak256(publicKey.slice(1));
   return toHex(hash.slice(-20)).toUpperCase();
 };
 
@@ -42,9 +42,7 @@ const sign = async (username, message) => {
   const privateKey = getPrivateKey(username);
   const hash = hashMessage(message);
 
-  const [signature, recoveryBit] = await secp.sign(hash, privateKey, {
-    recovered: true,
-  });
+  const [signature, recoveryBit] = await secp.sign(hash, privateKey, { recovered: true });
   const fullSignature = new Uint8Array([recoveryBit, ...signature]);
   return toHex(fullSignature);
 };

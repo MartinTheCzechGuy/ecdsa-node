@@ -22,7 +22,6 @@ function Transfer({ wallet, setWalletBalance, checkedBalanceAddress, checkedBala
     }
 
     const message = { amount: parseInt(sendAmount), recipient};
-
     const signature = await crypto.sign(wallet, message);
 
     try {
@@ -35,6 +34,7 @@ function Transfer({ wallet, setWalletBalance, checkedBalanceAddress, checkedBala
       return
     }
 
+    // lil hack to get the balance in `CheckBalance` updated if needed.
     if (recipient == checkedBalanceAddress) {
       setCheckedBalance(checkedBalance + parseInt(sendAmount));
     } 
